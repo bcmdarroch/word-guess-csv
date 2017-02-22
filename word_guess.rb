@@ -1,17 +1,12 @@
+require 'csv'
+
 class WordGuess
-  def initialize(debug = false)
+  def initialize(debug = true)
     # are we in debug mode?
     @debug = debug
 
     # possible words, selected at random
-    @words = {
-      "e" => %w(dog cat bug hat cap lit kin fan fin fun tan ten tin ton),
-      "m" => %w(plain claim brine crime alive bride skine drive slime stein jumpy),
-      "h" => %w(
-          machiavellian prestidigitation plenipotentiary quattuordecillion
-          magnanimous unencumbered bioluminescent circumlocution
-        )
-    }
+    @words = get_words
 
     # players attempts allowed by difficulty
     @tries = {
@@ -23,7 +18,7 @@ class WordGuess
     # ask the user to set the game mode
     mode = set_mode
 
-    @word    = @words[mode].sample # chosen word; players try to guess this
+    @word    = @words[mode].sample.downcase # chosen word; players try to guess this
     @guesses = @tries[mode] # how many tries the player gets
     @user_word = "•" * @word.length # a "blank word" for user output
     @guessed = [] # keep track of letters that have been guessed
@@ -71,6 +66,17 @@ class WordGuess
   end
 
   private
+
+  def get_words
+    word_database = CSV.open("words.csv")
+    words = {}
+    word_database.each do | line |
+      level = line[0]
+      linewords = line[1..-1]
+      words[level] = linewords
+    end
+    return words
+  end
 
   def add_to_guessed(letter)
     # push the letter to the array, then get rid of duplicates.
